@@ -1,0 +1,41 @@
+version: '3'
+
+volumes:
+  mariatls-sql-data:
+
+services:
+  client:
+    build: ./build-client
+    image: mariatls-client
+    # ports:
+      # - "80:80"
+      # - "4443:443"
+    volumes:
+      - ./cert-generator/certs:/etc/certs
+      - ./my-client.cnf:/etc/mysql/conf.d/my-client.cnf
+    depends_on:
+      - db
+
+  db:
+    image: mariadb:10.2.22
+    environment:
+      - MYSQL_ROOT_PASSWORD=testing
+    volumes:
+      - mariatls-sql-data:/var/lib/mysql
+      # - ./my.cnf:/etc/mysql/my.cnf
+      # - ./my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./cert-generator/certs:/etc/certs
+    ports:
+      - "3306:3306"
+    command: >
+      --sql_mode="NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION"
+      --innodb-use-native-aio=OFF
+      --net-read-timeout=3600
+      --net-write-timeout=3600
+      --ssl-ca=/etc/certs/ca.pem
+      --ssl-cert=/etc/certs/server-cert.pem
+      --ssl-key=/etc/certs/server-key.pem
+    # TO CHECK VARIABLES:
+      # docker exec -it ice_db_1 bash
+      # mysql -uroot -p...
+      # SHOW VARIABLES LIKE '%timeout%';

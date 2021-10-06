@@ -1,0 +1,3 @@
+[client-server]
+ssl_ca=/etc/certs/ca.pem
+# ssl-verify-server-cert
